@@ -1,0 +1,22 @@
+# InterviewSense — Backend Dependencies
+# Install with: pip install -r requirements.txt
+# On Windows, install dlib via conda or a prebuilt wheel before running pip.
+
+# ── Web framework ──────────────────────────────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9        # Required for file upload (multipart/form-data)
+
+# ── Computer vision ────────────────────────────────────────────────────────────
+opencv-python==4.10.0.84       # Video I/O, solvePnP, iris detection, YuNet
+dlib==19.24.6                  # HOG face detector + 68-point ERT shape predictor
+mediapipe==0.10.14             # BlazePose (body posture) + Face Mesh fallback
+
+# ── Numerics ───────────────────────────────────────────────────────────────────
+numpy==1.26.4
+
+# ── Video conversion ───────────────────────────────────────────────────────────
+ffmpeg-python==0.2.0           # Python wrapper around the FFmpeg CLI
+
+# ── Database ───────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.35             # ORM for SQLite
