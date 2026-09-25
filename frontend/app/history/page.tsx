@@ -59,7 +59,7 @@ export default function HistoryPage() {
                   {new Date(s.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </p>
                 <div style={{ display: 'flex', gap: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  <span>{s.duration_seconds ? \`\${Math.round(s.duration_seconds)}s\` : 'Unknown duration'}</span>
+                  <span>{s.duration_seconds ? `${Math.round(Number(s.duration_seconds))}s` : 'Unknown duration'}</span>
                   <span>
                     Status: <span style={{ color: s.status === 'complete' ? 'var(--success)' : s.status === 'error' ? 'var(--error)' : 'var(--accent-primary)' }}>{s.status}</span>
                   </span>
