@@ -1,50 +1,25 @@
-"""
-main.py
--------
-FastAPI application entry point for InterviewSense.
-
-Startup tasks
--------------
-- Verify FFmpeg is available on PATH
-- Initialise the SQLite database (create tables if missing)
-- Register routers
-
-Run with::
-
-    uvicorn backend.main:app --reload --port 8000
-"""
-
-from __future__ import annotations
-
-import logging
 import os
-from pathlib import Path
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
 from backend.database import init_db
-from backend.services.ffmpeg_utils import verify_ffmpeg_available
+from backend.routers import session, report
 
-logger = logging.getLogger(__name__)
+load_dotenv()
 
-# ── Application factory ────────────────────────────────────────────────────────
-app = FastAPI(
-    title="InterviewSense API",
-    description=(
-        "Backend for InterviewSense — non-verbal communication analytics "
-        "from webcam interview recordings."
-    ),
-    version="0.1.0",
-)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize the database tables on startup
+    init_db()
+    yield
 
-# ── CORS ───────────────────────────────────────────────────────────────────────
-# Allow the Next.js dev server (and any configured production origin) to call
-# the API.  Update ALLOWED_ORIGINS in .env for production.
-_allowed_origins_raw: str = os.getenv(
-    "ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
-)
-allowed_origins: list[str] = [o.strip() for o in _allowed_origins_raw.split(",")]
+app = FastAPI(title="InterviewSense Backend", lifespan=lifespan)
+
+# Configure CORS
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,40 +29,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include Routers
+app.include_router(session.router)
+app.include_router(report.router)
 
-# ── Startup ────────────────────────────────────────────────────────────────────
-@app.on_event("startup")
-def on_startup() -> None:
-    # 1. Ensure uploads directory exists
-    upload_dir = Path(os.getenv("UPLOAD_DIR", "uploads"))
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    logger.info("Upload directory: %s", upload_dir.resolve())
-
-    # 2. Check FFmpeg
-    if not verify_ffmpeg_available():
-        logger.warning(
-            "FFmpeg not found on PATH. Video conversion will fail. "
-            "Install FFmpeg and ensure it is accessible from this environment."
-        )
-    else:
-        logger.info("FFmpeg is available.")
-
-    # 3. Initialise database
-    init_db()
-    logger.info("Database initialised.")
-
-
-# ── Routers ────────────────────────────────────────────────────────────────────
-# Imported here (after app is created) to avoid circular imports.
-from backend.routers import session as session_router  # noqa: E402
-from backend.routers import report as report_router    # noqa: E402
-
-app.include_router(session_router.router, prefix="/api/session", tags=["session"])
-app.include_router(report_router.router, prefix="/api/report", tags=["report"])
-
-
-# ── Health check ───────────────────────────────────────────────────────────────
-@app.get("/health", tags=["health"])
-def health() -> dict[str, str]:
-    """Liveness probe — returns 200 OK when the server is running."""
+@app.get("/health")
+def health_check():
+    """Simple liveness probe."""
     return {"status": "ok"}

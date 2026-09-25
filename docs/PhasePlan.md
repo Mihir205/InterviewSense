@@ -15,7 +15,7 @@
 | 2 | Computer Vision Pipeline | ✅ Completed | 100% |
 | 3 | Behavioral Metrics Engine | ✅ Completed | 100% |
 | 4 | Behavior Engine & Engagement Scoring | ✅ Completed | 100% |
-| 5 | FastAPI Backend & Data Persistence | 🔲 Not Started | 0% |
+| 5 | FastAPI Backend & Data Persistence | ✅ Completed | 100% |
 | 6 | Next.js Frontend & Report UI | 🔲 Not Started | 0% |
 
 > **Status key:** 🔲 Not Started | 🔄 In Progress | ✅ Completed
@@ -281,7 +281,7 @@
 
 ### 5.1 Project Structure
 
-- [ ] Lay out the backend folder:
+- [x] Lay out the backend folder:
   ```
   backend/
   ├── main.py               # App entry point, CORS, router registration
@@ -302,16 +302,16 @@
 
 ### 5.2 Video Upload Endpoint
 
-- [ ] `POST /api/session/upload`
+- [x] `POST /api/session/upload`
   - Accept `multipart/form-data` with a video file field
   - Validate MIME type / extension (WebM, MP4, MOV)
   - Save to `uploads/<uuid>.<ext>`
   - Create a new `sessions` row; return `{ "session_id": "...", "status": "queued" }`
-- [ ] Set maximum upload size (e.g. 500 MB) in Uvicorn / FastAPI config
+- [x] Set maximum upload size (e.g. 500 MB) in Uvicorn / FastAPI config
 
 ### 5.3 Analysis Orchestration Endpoint
 
-- [ ] `POST /api/session/{session_id}/analyze`
+- [x] `POST /api/session/{session_id}/analyze`
   1. Run FFmpeg conversion to MP4 if the source is WebM
   2. Run `VideoProcessor` to iterate frames
   3. For each frame: face detection → 68 landmarks → body pose (Phase 2)
@@ -321,25 +321,25 @@
   7. Bulk-insert `frame_metrics` rows; insert `moments` rows; insert `session_summary` row
   8. Delete the uploaded video file
   9. Return `{ "status": "complete", "session_id": "..." }`
-- [ ] `GET /api/session/{session_id}/status` — returns current status (`queued`, `processing`, `complete`, `error`)
-- [ ] Return meaningful HTTP error codes on failure
+- [x] `GET /api/session/{session_id}/status` — returns current status (`queued`, `processing`, `complete`, `error`)
+- [x] Return meaningful HTTP error codes on failure
 
 ### 5.4 Report Endpoints
 
-- [ ] `GET /api/report/{session_id}/summary` — returns the `session_summary` row as JSON
-- [ ] `GET /api/report/{session_id}/timeline` — returns `frame_metrics` sampled at ~1 FPS (one row per second) for chart rendering
-- [ ] `GET /api/report/{session_id}/moments` — returns all rows from `moments` sorted by `timestamp_sec`
-- [ ] Validate all responses with Pydantic schemas
+- [x] `GET /api/report/{session_id}/summary` — returns the `session_summary` row as JSON
+- [x] `GET /api/report/{session_id}/timeline` — returns `frame_metrics` sampled at ~1 FPS (one row per second) for chart rendering
+- [x] `GET /api/report/{session_id}/moments` — returns all rows from `moments` sorted by `timestamp_sec`
+- [x] Validate all responses with Pydantic schemas
 
 ### 5.5 CORS, Config & Health Check
 
-- [ ] Add `CORSMiddleware` allowing the Next.js dev origin (`http://localhost:3000`)
-- [ ] Read settings from `.env`:
+- [x] Add `CORSMiddleware` allowing the Next.js dev origin (`http://localhost:3000`)
+- [x] Read settings from `.env`:
   - `DATABASE_URL`
   - `UPLOAD_DIR`
   - `MAX_UPLOAD_SIZE_MB`
   - `PROCESSING_FPS`
-- [ ] `GET /health` — returns `{ "status": "ok" }` for quick liveness checks
+- [x] `GET /health` — returns `{ "status": "ok" }` for quick liveness checks
 
 ---
 
