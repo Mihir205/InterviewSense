@@ -12,7 +12,7 @@
 | Phase | Title | Status | Progress |
 |-------|-------|--------|----------|
 | 1 | Project Setup & Infrastructure | ✅ Completed | 100% |
-| 2 | Computer Vision Pipeline | 🔲 Not Started | 0% |
+| 2 | Computer Vision Pipeline | ✅ Completed | 100% |
 | 3 | Behavioral Metrics Engine | 🔲 Not Started | 0% |
 | 4 | Behavior Engine & Engagement Scoring | 🔲 Not Started | 0% |
 | 5 | FastAPI Backend & Data Persistence | 🔲 Not Started | 0% |
@@ -103,31 +103,31 @@
 
 ### 2.1 Video Ingestion & Frame Extraction
 
-- [ ] Implement `VideoProcessor` class (`backend/services/video_service.py`):
-  - [ ] Accept a path to an MP4 file (post-FFmpeg conversion)
-  - [ ] Open with `cv2.VideoCapture`
-  - [ ] Sample frames at ~10–15 FPS by skipping intermediate frames
-  - [ ] Yield `(frame_bgr, timestamp_sec)` for each sampled frame
-- [ ] Handle edge cases: file not found, corrupt video, duration < 10 seconds
+- [x] Implement `VideoProcessor` class (`backend/services/video_service.py`):
+  - [x] Accept a path to an MP4 file (post-FFmpeg conversion)
+  - [x] Open with `cv2.VideoCapture`
+  - [x] Sample frames at ~10–15 FPS by skipping intermediate frames
+  - [x] Yield `(frame_bgr, timestamp_sec)` for each sampled frame
+- [x] Handle edge cases: file not found, corrupt video, duration < 10 seconds
 
 ### 2.2 Face Detection
 
 **Primary — dlib HOG + Linear SVM**
-- [ ] Load `dlib.get_frontal_face_detector()`
-- [ ] Detect the face in each frame and return the largest bounding box
-- [ ] Log a warning when no face is detected and skip the frame
+- [x] Load `dlib.get_frontal_face_detector()`
+- [x] Detect the face in each frame and return the largest bounding box
+- [x] Log a warning when no face is detected and skip the frame
 
 **Fallback — YuNet (OpenCV)**
-- [ ] Load `cv2.FaceDetectorYN` with the downloaded `.onnx` file
-- [ ] Switch to YuNet automatically if dlib fails for N consecutive frames
-- [ ] Return the same bounding-box format so the rest of the pipeline stays unchanged
+- [x] Load `cv2.FaceDetectorYN` with the downloaded `.onnx` file
+- [x] Switch to YuNet automatically if dlib fails for N consecutive frames
+- [x] Return the same bounding-box format so the rest of the pipeline stays unchanged
 
 ### 2.3 Facial Landmark Detection (68 Points — ERT, Kazemi & Sullivan 2014)
 
-- [ ] Load `dlib.shape_predictor` using `shape_predictor_68_face_landmarks.dat`
-- [ ] Run the predictor on the face bounding box for each frame
-- [ ] Extract all 68 `(x, y)` coordinates into a NumPy array
-- [ ] Map point indices to named landmark groups for use in later phases:
+- [x] Load `dlib.shape_predictor` using `shape_predictor_68_face_landmarks.dat`
+- [x] Run the predictor on the face bounding box for each frame
+- [x] Extract all 68 `(x, y)` coordinates into a NumPy array
+- [x] Map point indices to named landmark groups for use in later phases:
   - Left eye: 36–41 | Right eye: 42–47
   - Outer lip: 48–59 | Inner lip: 60–67
   - Nose tip: 33 | Chin: 8
@@ -135,21 +135,21 @@
 
 ### 2.4 Body Pose Detection — MediaPipe Pose Landmarker (BlazePose)
 
-- [ ] Initialise MediaPipe Pose in static-image mode, CPU only
-- [ ] Run pose on each frame and extract:
+- [x] Initialise MediaPipe Pose in static-image mode, CPU only
+- [x] Run pose on each frame and extract:
   - Left shoulder: landmark 11
   - Right shoulder: landmark 12
   - Nose: landmark 0 (used for head-to-shoulder height)
-- [ ] Return `None` gracefully when pose is not detected
+- [x] Return `None` gracefully when pose is not detected
 
 ### 2.5 Calibration Baseline
 
-- [ ] Collect measurements from the **first 10 seconds** of each recording (the candidate sits normally and looks at the camera)
-- [ ] From those frames, compute per-session baseline values:
-  - [ ] Mean EAR → personal blink threshold
-  - [ ] Mean head yaw, pitch, roll → neutral head pose reference
-  - [ ] Mean shoulder positions → neutral posture reference
-- [ ] Store baseline in a `CalibrationBaseline` dataclass and pass it to Phase 3 modules
+- [x] Collect measurements from the **first 10 seconds** of each recording (the candidate sits normally and looks at the camera)
+- [x] From those frames, compute per-session baseline values:
+  - [x] Mean EAR → personal blink threshold
+  - [x] Mean head yaw, pitch, roll → neutral head pose reference
+  - [x] Mean shoulder positions → neutral posture reference
+- [x] Store baseline in a `CalibrationBaseline` dataclass and pass it to Phase 3 modules
 
 ---
 
