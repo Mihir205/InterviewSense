@@ -13,7 +13,7 @@
 |-------|-------|--------|----------|
 | 1 | Project Setup & Infrastructure | ✅ Completed | 100% |
 | 2 | Computer Vision Pipeline | ✅ Completed | 100% |
-| 3 | Behavioral Metrics Engine | 🔲 Not Started | 0% |
+| 3 | Behavioral Metrics Engine | ✅ Completed | 100% |
 | 4 | Behavior Engine & Engagement Scoring | 🔲 Not Started | 0% |
 | 5 | FastAPI Backend & Data Persistence | 🔲 Not Started | 0% |
 | 6 | Next.js Frontend & Report UI | 🔲 Not Started | 0% |
@@ -159,57 +159,57 @@
 
 ### 3.1 Head Pose — PnP + Rodrigues
 
-- [ ] Define a generic 3D face model (reference points: nose tip, chin, left/right eye corners, left/right mouth corners)
-- [ ] For each frame, call `cv2.solvePnP()` (`SOLVEPNP_ITERATIVE`) with the matched 2D landmark points and the camera intrinsics (estimated from image size)
-- [ ] Convert the rotation vector with `cv2.Rodrigues()` and decompose to **yaw, pitch, roll** in degrees
-- [ ] Compute a **head-stability score**: rolling standard deviation of yaw, pitch, and roll over a ~30-frame window (lower std-dev = more stable)
-- [ ] Subtract the calibration baseline neutral angles before scoring
+- [x] Define a generic 3D face model (reference points: nose tip, chin, left/right eye corners, left/right mouth corners)
+- [x] For each frame, call `cv2.solvePnP()` (`SOLVEPNP_ITERATIVE`) with the matched 2D landmark points and the camera intrinsics (estimated from image size)
+- [x] Convert the rotation vector with `cv2.Rodrigues()` and decompose to **yaw, pitch, roll** in degrees
+- [x] Compute a **head-stability score**: rolling standard deviation of yaw, pitch, and roll over a ~30-frame window (lower std-dev = more stable)
+- [x] Subtract the calibration baseline neutral angles before scoring
 
 ### 3.2 Blink Rate — Eye Aspect Ratio (EAR, Soukupova & Cech 2016)
 
-- [ ] Implement EAR:
+- [x] Implement EAR:
   ```
   EAR = (|p2−p6| + |p3−p5|) / (2 × |p1−p4|)
   ```
   where p1–p6 are the six landmarks of one eye
-- [ ] Average EAR across left and right eyes each frame
-- [ ] Use the calibration-period EAR mean to set a personal closure threshold (default ~0.21 if calibration is unavailable)
-- [ ] Detect blinks with a state machine: OPEN → CLOSED → OPEN counts as one blink
-- [ ] Compute **blink rate** (blinks per minute) over a rolling 60-second window
+- [x] Average EAR across left and right eyes each frame
+- [x] Use the calibration-period EAR mean to set a personal closure threshold (default ~0.21 if calibration is unavailable)
+- [x] Detect blinks with a state machine: OPEN → CLOSED → OPEN counts as one blink
+- [x] Compute **blink rate** (blinks per minute) over a rolling 60-second window
 
 ### 3.3 Mouth Movement — Mouth Aspect Ratio (MAR)
 
-- [ ] Implement MAR using inner lip landmarks 60–67 (same ratio style as EAR)
-- [ ] Compute MAR per frame and apply a rolling average to smooth noise
-- [ ] Flag a frame as **active mouth movement** when smoothed MAR exceeds its calibration-period mean by a set margin
-- [ ] Treat this as general facial activity — without audio, talking and smiling cannot be separated
+- [x] Implement MAR using inner lip landmarks 60–67 (same ratio style as EAR)
+- [x] Compute MAR per frame and apply a rolling average to smooth noise
+- [x] Flag a frame as **active mouth movement** when smoothed MAR exceeds its calibration-period mean by a set margin
+- [x] Treat this as general facial activity — without audio, talking and smiling cannot be separated
 
 ### 3.4 Eye Gaze & Eye Contact
 
 **Iris localisation (primary)**
-- [ ] Crop each eye region from the frame using bounding boxes derived from eye landmarks
-- [ ] Convert crop to greyscale; apply `cv2.adaptiveThreshold` to isolate the dark iris
-- [ ] Find contours with `cv2.findContours`; pick the largest blob as the iris candidate
-- [ ] Use `cv2.moments` to compute the iris centroid; derive the iris offset relative to the eye-corner landmarks
-- [ ] Combine iris offset + head yaw/pitch to produce a **gaze direction vector**
-- [ ] A frame counts as **eye contact** when the gaze vector falls within a defined camera-facing zone
-- [ ] Compute **eye-contact percentage** = (frames with eye contact) / (total frames)
+- [x] Crop each eye region from the frame using bounding boxes derived from eye landmarks
+- [x] Convert crop to greyscale; apply `cv2.adaptiveThreshold` to isolate the dark iris
+- [x] Find contours with `cv2.findContours`; pick the largest blob as the iris candidate
+- [x] Use `cv2.moments` to compute the iris centroid; derive the iris offset relative to the eye-corner landmarks
+- [x] Combine iris offset + head yaw/pitch to produce a **gaze direction vector**
+- [x] A frame counts as **eye contact** when the gaze vector falls within a defined camera-facing zone
+- [x] Compute **eye-contact percentage** = (frames with eye contact) / (total frames)
 
 **Fallback — MediaPipe Face Landmarker (Face Mesh + iris landmarks)**
-- [ ] Initialise MediaPipe Face Landmarker
-- [ ] Switch to MediaPipe gaze when iris contour detection fails for N consecutive frames (e.g. glasses, dim light)
+- [x] Initialise MediaPipe Face Landmarker
+- [x] Switch to MediaPipe gaze when iris contour detection fails for N consecutive frames (e.g. glasses, dim light)
 
 > Note: webcam gaze only indicates whether the candidate is looking at the camera zone, not the exact spot. Performance degrades with glasses and poor lighting.
 
 ### 3.5 Body Posture — BlazePose Shoulders
 
-- [ ] Compute **shoulder tilt angle**: `atan2(right_y − left_y, right_x − left_x)`
-- [ ] Compute **head vertical offset**: nose landmark y vs shoulder-midpoint y, normalised by shoulder width
-- [ ] Detect posture events per frame:
+- [x] Compute **shoulder tilt angle**: `atan2(right_y − left_y, right_x − left_x)`
+- [x] Compute **head vertical offset**: nose landmark y vs shoulder-midpoint y, normalised by shoulder width
+- [x] Detect posture events per frame:
   - **Slouching** — head drops significantly below calibration baseline vertical offset
   - **Leaning** — sustained lateral head movement beyond a threshold
   - **Tilted shoulders** — shoulder tilt angle held above threshold for several seconds
-- [ ] Produce a **per-frame posture score** from 0 to 1 (1 = upright and centred)
+- [x] Produce a **per-frame posture score** from 0 to 1 (1 = upright and centred)
 
 ---
 
