@@ -14,7 +14,7 @@
 | 1 | Project Setup & Infrastructure | ✅ Completed | 100% |
 | 2 | Computer Vision Pipeline | ✅ Completed | 100% |
 | 3 | Behavioral Metrics Engine | ✅ Completed | 100% |
-| 4 | Behavior Engine & Engagement Scoring | 🔲 Not Started | 0% |
+| 4 | Behavior Engine & Engagement Scoring | ✅ Completed | 100% |
 | 5 | FastAPI Backend & Data Persistence | 🔲 Not Started | 0% |
 | 6 | Next.js Frontend & Report UI | 🔲 Not Started | 0% |
 
@@ -219,22 +219,22 @@
 
 ### 4.1 Temporal Smoothing
 
-- [ ] Apply exponential moving average (EMA) to each raw metric stream to remove frame-level noise
-- [ ] Smoothing window: ~15–30 frames (roughly 1–2 seconds at 15 FPS)
-- [ ] Apply independently to: EAR, MAR, gaze vector, head yaw/pitch/roll, posture score
-- [ ] Persist both raw and smoothed values per frame in the `frame_metrics` table
+- [x] Apply exponential moving average (EMA) to each raw metric stream to remove frame-level noise
+- [x] Smoothing window: ~15–30 frames (roughly 1–2 seconds at 15 FPS)
+- [x] Apply independently to: EAR, MAR, gaze vector, head yaw/pitch/roll, posture score
+- [x] Persist both raw and smoothed values per frame in the `frame_metrics` table
 
 ### 4.2 Feature Fusion & Normalisation
 
-- [ ] After smoothing, assemble a per-frame feature vector:
+- [x] After smoothing, assemble a per-frame feature vector:
   ```
   [eye_contact_bool, head_stability_score, blink_rate, mouth_activity, posture_score]
   ```
-- [ ] Normalise each component to [0, 1] using calibration baselines and empirical reference ranges
+- [x] Normalise each component to [0, 1] using calibration baselines and empirical reference ranges
 
 ### 4.3 Rule-Based Weighted Engagement Scoring
 
-- [ ] Compute a **rolling engagement score** over 5-second windows using these starting weights (tune after testing):
+- [x] Compute a **rolling engagement score** over 5-second windows using these starting weights (tune after testing):
 
   | Metric | Weight |
   |--------|--------|
@@ -244,34 +244,34 @@
   | Blink rate | 10% |
   | Mouth activity | 10% |
 
-- [ ] Compute the **overall engagement score** (0–100) as the session-average of the rolling scores
+- [x] Compute the **overall engagement score** (0–100) as the session-average of the rolling scores
 
 ### 4.4 Moment Detection
 
 **Strong moments** — flag a window when:
-- [ ] Eye contact is sustained above 90 % for > 5 seconds
-- [ ] Head is stable and posture is upright simultaneously
+- [x] Eye contact is sustained above 90 % for > 5 seconds
+- [x] Head is stable and posture is upright simultaneously
 
 **Weak moments** — flag a window when (sub-score below threshold for > ~3 seconds):
-- [ ] Eye contact drops out for > 3 seconds
-- [ ] Head yaw > 20 ° or pitch > 15 ° sustained
-- [ ] Slouching or leaning detected continuously
-- [ ] Blink rate is very high (> 30 bpm) or very low (< 5 bpm)
-- [ ] No mouth movement detected for an extended period
+- [x] Eye contact drops out for > 3 seconds
+- [x] Head yaw > 20 ° or pitch > 15 ° sustained
+- [x] Slouching or leaning detected continuously
+- [x] Blink rate is very high (> 30 bpm) or very low (< 5 bpm)
+- [x] No mouth movement detected for an extended period
 
-- [ ] Each moment record: `timestamp_sec`, `type` (strong / weak), `label`, `description`
-- [ ] Remove overlapping moments with a simple NMS-style suppression pass
+- [x] Each moment record: `timestamp_sec`, `type` (strong / weak), `label`, `description`
+- [x] Remove overlapping moments with a simple NMS-style suppression pass
 
 ### 4.5 Session Summary
 
-- [ ] After full-video processing, aggregate:
+- [x] After full-video processing, aggregate:
   - `eye_contact_pct` — overall eye-contact percentage
   - `blink_rate` — overall blinks per minute
   - `avg_head_stability` — mean stability score
   - `avg_mouth_activity` — mean active-mouth fraction
   - `avg_posture_score` — mean per-frame posture score
   - `engagement_score` — final 0–100 weighted score
-- [ ] Write to `session_summary` table in SQLite
+- [x] Write to `session_summary` table in SQLite
 
 ---
 
