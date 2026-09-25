@@ -16,7 +16,7 @@
 | 3 | Behavioral Metrics Engine | ✅ Completed | 100% |
 | 4 | Behavior Engine & Engagement Scoring | ✅ Completed | 100% |
 | 5 | FastAPI Backend & Data Persistence | ✅ Completed | 100% |
-| 6 | Next.js Frontend & Report UI | 🔲 Not Started | 0% |
+| 6 | Next.js Frontend & Report UI | ✅ Completed | 100% |
 
 > **Status key:** 🔲 Not Started | 🔄 In Progress | ✅ Completed
 
@@ -349,71 +349,71 @@
 
 ### 6.1 Recording Page (`/interview`)
 
-- [ ] Request webcam access via `navigator.mediaDevices.getUserMedia`
-- [ ] Record with **MediaRecorder API**:
-  - [ ] Start on "Begin Interview" button click
-  - [ ] Buffer video chunks into an array
-  - [ ] Stop on "Stop & Analyse" button click; assemble chunks into a `Blob` (WebM)
-- [ ] Show live webcam preview only — no analysis happens here
-- [ ] Display a running timer while recording
-- [ ] On stop: `POST /api/session/upload` with the video `Blob`; navigate to `/processing?session=<id>`
+- [x] Request webcam access via `navigator.mediaDevices.getUserMedia`
+- [x] Record with **MediaRecorder API**:
+  - [x] Start on "Begin Interview" button click
+  - [x] Buffer video chunks into an array
+  - [x] Stop on "Stop & Analyse" button click; assemble chunks into a `Blob` (WebM)
+- [x] Show live webcam preview only — no analysis happens here
+- [x] Display a running timer while recording
+- [x] On stop: `POST /api/session/upload` with the video `Blob`; navigate to `/processing?session=<id>`
 
 ### 6.2 Processing Page (`/processing`)
 
-- [ ] Show an upload progress bar while the file uploads
-- [ ] Once upload completes, call `POST /api/session/{session_id}/analyze`
-- [ ] Poll `GET /api/session/{session_id}/status` every 2–3 seconds
-- [ ] Show an animated "Analysing…" state while the backend works
-- [ ] On `status === "complete"`, redirect to `/report/{session_id}`
-- [ ] On `status === "error"`, show an error message with a retry option
+- [x] Show an upload progress bar while the file uploads
+- [x] Once upload completes, call `POST /api/session/{session_id}/analyze`
+- [x] Poll `GET /api/session/{session_id}/status` every 2–3 seconds
+- [x] Show an animated "Analysing…" state while the backend works
+- [x] On `status === "complete"`, redirect to `/report/{session_id}`
+- [x] On `status === "error"`, show an error message with a retry option
 
 ### 6.3 Report Page — Summary (`/report/[sessionId]`)
 
-- [ ] Fetch `GET /api/report/{session_id}/summary` on page load
-- [ ] Display a large **Overall Engagement Score** gauge (circular / radial)
-- [ ] Display a metric card for each of the five measures:
+- [x] Fetch `GET /api/report/{session_id}/summary` on page load
+- [x] Display a large **Overall Engagement Score** gauge (circular / radial)
+- [x] Display a metric card for each of the five measures:
   - Eye Contact %
   - Blink Rate (bpm)
   - Head Stability
   - Mouth Activity
   - Posture Score
-- [ ] Each card shows its numeric value and a short contextual label ("Good", "Needs Work", etc.)
+- [x] Each card shows its numeric value and a short contextual label ("Good", "Needs Work", etc.)
 
 ### 6.4 Report Page — Timeline Charts
 
-- [ ] Fetch `GET /api/report/{session_id}/timeline`
-- [ ] Render line / area charts using **Recharts** for:
+- [x] Fetch `GET /api/report/{session_id}/timeline`
+- [x] Render line / area charts using **Recharts** for:
   - Eye contact (rolling %)
   - Head yaw, pitch, roll
   - EAR (blink activity)
   - MAR (mouth activity)
   - Posture score
-- [ ] Charts should be interactive: hover shows exact timestamp and value
-- [ ] Overlay coloured markers at moment timestamps (green = strong, red = weak)
+- [x] Charts should be interactive: hover shows exact timestamp and value
+- [x] Overlay coloured markers at moment timestamps (green = strong, red = weak)
 
 ### 6.5 Report Page — Key Moments Panel
 
-- [ ] Fetch `GET /api/report/{session_id}/moments`
-- [ ] Render a scrollable chronological list:
+- [x] Fetch `GET /api/report/{session_id}/moments`
+- [x] Render a scrollable chronological list:
   - 🟢 Strong moments — green indicator, timestamp, label, one-line description
   - 🔴 Weak moments — red indicator, timestamp, label, one-line description
-- [ ] Clicking a moment scrolls the timeline charts to that timestamp and highlights the marker
+- [x] Clicking a moment scrolls the timeline charts to that timestamp and highlights the marker
 
 ### 6.6 Home / Landing Page (`/`)
 
-- [ ] Explain what InterviewSense does in plain language
-- [ ] CTA button: **"Start Mock Interview"** → `/interview`
-- [ ] Short bullet list of what is analysed (eye contact, head pose, posture, etc.)
-- [ ] Privacy note: "Everything runs locally — your video never leaves your computer"
+- [x] Explain what InterviewSense does in plain language
+- [x] CTA button: **"Start Mock Interview"** → `/interview`
+- [x] Short bullet list of what is analysed (eye contact, head pose, posture, etc.)
+- [x] Privacy note: "Everything runs locally — your video never leaves your computer"
 
 ### 6.7 UI & Polish
 
-- [ ] Consistent dark-mode design across all pages
-- [ ] Typography: **Inter** from Google Fonts
-- [ ] Colour palette: indigo/blue primary accent; green for strong moments; red for weak moments
-- [ ] Responsive layout (desktop-first; minimum usable on a tablet)
-- [ ] Add loading skeletons, error boundaries, and empty states
-- [ ] Smooth page transitions
+- [x] Consistent dark-mode design across all pages
+- [x] Typography: **Inter** from Google Fonts
+- [x] Colour palette: indigo/blue primary accent; green for strong moments; red for weak moments
+- [x] Responsive layout (desktop-first; minimum usable on a tablet)
+- [x] Add loading skeletons, error boundaries, and empty states
+- [x] Smooth page transitions
 
 ---
 
