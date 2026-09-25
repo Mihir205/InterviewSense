@@ -2,7 +2,7 @@
 
 > **Communication analytics using facial landmark geometry and behavioral vision**
 >
-> This document breaks the project into **6 phases** for structured development.
+> This document breaks the project into **8 phases** for structured development.
 > Tick each checkbox as work is completed and update the progress table as each phase moves forward.
 
 ---
@@ -17,6 +17,8 @@
 | 4 | Behavior Engine & Engagement Scoring | ✅ Completed | 100% |
 | 5 | FastAPI Backend & Data Persistence | ✅ Completed | 100% |
 | 6 | Next.js Frontend & Report UI | ✅ Completed | 100% |
+| 7 | Bug Fixes & Backend Hardening | 🔲 Not Started | 0% |
+| 8 | Enhancements & Polish | 🔲 Not Started | 0% |
 
 > **Status key:** 🔲 Not Started | 🔄 In Progress | ✅ Completed
 
@@ -440,6 +442,64 @@
 | ORM | SQLAlchemy |
 | Scoring method | Rule-based weighted sum (no ML model) |
 | Deployment | Fully local — CPU only, no cloud |
+
+---
+
+## Phase 7 — Bug Fixes & Backend Hardening
+
+> **Goal:** Fix all critical and moderate bugs identified during live testing. The app must complete a full analysis without errors and persist results to SQLite correctly.
+
+### 7.1 Critical Bug Fixes
+
+- [ ] **B1** Fix `CalibrationBaseline` field name — rename `mean_shoulder_y` → `mean_shoulder_tilt` in `cv_pipeline.py`
+- [ ] **B2** Fix background task DB session leak — replace `next(db_generator())` with a direct `SessionLocal()` + `db.close()` in `finally` block in `session.py`
+- [ ] **B3** Fix `smoothed_metrics` missing `head_offset` — add `head_offset` to the dict stored per frame in `behavior_engine.py`
+- [ ] **B4** Fix deprecated `bulk_save_objects` — replace with `db.add_all()` + `db.flush()` for frames, moments, and summary in `session.py`
+- [ ] **B5** Fix `VideoProcessor` file handle leak — implement `__enter__`/`__exit__` and use as context manager
+
+### 7.2 Moderate Fixes
+
+- [ ] **M1** Add `logger.exception()` in background task `except` block to capture full traceback
+- [ ] **M2** Fix timeline endpoint — sample by `timestamp_sec` instead of hardcoded `frame_number % 12`
+- [ ] **M3** Centralise API base URL — create `frontend/lib/api.ts` with `NEXT_PUBLIC_API_URL` env var
+- [ ] **M4** Wrap `useSearchParams()` in `<Suspense>` boundary in `processing/page.tsx`
+- [ ] **M5** Fix SVG gauge animation — add delayed `useEffect` state to trigger CSS `stroke-dasharray` transition
+- [ ] **M6** Add `__init__.py` to `backend/schemas/`
+- [ ] **M7** Download `face_detection_yunet_2023mar.onnx` into `models/` folder and verify fallback works
+- [ ] **M8** Fix processing page reload — check `/status` before triggering `/analyze` POST
+- [ ] **M9** Fix upload memory issue — stream file to disk using `shutil.copyfileobj` instead of `await file.read()`
+
+### 7.3 Verification
+
+- [ ] Record a 30-second test interview and confirm status progresses through `queued → processing → complete`
+- [ ] Verify report page loads summary, timeline, and moments correctly
+- [ ] Confirm SQLite DB has correct rows in all four tables after analysis
+
+---
+
+## Phase 8 — Enhancements & Polish
+
+> **Goal:** Add useful features that turn the MVP into a polished, production-ready tool.
+
+### 8.1 Backend Enhancements
+
+- [ ] **P1** Add `progress_pct` field to `GET /api/session/{id}/status` response (frames processed / total frames)
+- [ ] **P2** Add `GET /api/sessions` endpoint that returns a paginated list of all past sessions
+- [ ] **P5** Add `next.config.ts` with `rewrites()` to forward `/api/*` → backend, removing the need for CORS headers
+
+### 8.2 Frontend Enhancements
+
+- [ ] **P2** Build a `/history` page showing all past sessions with their engagement scores and dates
+- [ ] **P3** Update `.env` file from `.env.example`; add clear two-command "How to Run" section to `README.md`
+- [ ] **P4** Add a **Print / Export Report** button to the report page using `window.print()` with print-specific CSS
+- [ ] **P6** Replace `alert()` on upload/analysis failure with a clean inline error UI component
+- [ ] Animate metric cards on entry with staggered `slide-up` delays
+- [ ] Add a tooltip to the engagement score gauge explaining what the number means
+
+### 8.3 Developer Experience
+
+- [ ] Add a `Makefile` or `run.ps1` PowerShell script that boots both servers with one command
+- [ ] Add Python unit tests for `MetricsEngine` and `BehaviorEngine` using `pytest` with a synthetic frame fixture
 
 ---
 
