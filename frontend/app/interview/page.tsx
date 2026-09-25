@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_BASE } from '@/lib/api';
 
 export default function InterviewPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function InterviewPage() {
   const [streamActive, setStreamActive] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function setupCamera() {
@@ -24,9 +26,11 @@ export default function InterviewPage() {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           setStreamActive(true);
+          setError(null);
         }
       } catch (err) {
         console.error("Error accessing webcam:", err);
+        setError("Could not access webcam. Please check permissions.");
       }
     }
     setupCamera();
@@ -71,7 +75,7 @@ export default function InterviewPage() {
       formData.append('file', blob, 'recording.webm');
       
       try {
-        const res = await fetch('http://localhost:8000/api/session/upload', {
+        const res = await fetch(`${API_BASE}/api/session/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -80,12 +84,12 @@ export default function InterviewPage() {
         if (data.session_id) {
           router.push(`/processing?session=${data.session_id}`);
         } else {
-          alert('Upload failed');
+          setError('Upload failed. The server returned an error.');
           setIsUploading(false);
         }
       } catch (err) {
         console.error(err);
-        alert('Upload error');
+        setError('Upload error. Could not connect to the server.');
         setIsUploading(false);
       }
     };
@@ -155,6 +159,12 @@ export default function InterviewPage() {
         )}
       </div>
       
+      {error && (
+        <div style={{ marginTop: '24px', padding: '12px 24px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', borderRadius: '8px', border: '1px solid var(--error)', fontSize: '0.875rem' }}>
+          {error}
+        </div>
+      )}
+
       <p style={{ marginTop: '24px', color: 'var(--text-secondary)', fontSize: '0.875rem' }} className="fade-in">
         Ensure your face and shoulders are clearly visible in the frame.
       </p>

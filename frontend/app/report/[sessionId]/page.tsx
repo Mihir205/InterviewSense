@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
   ReferenceDot
 } from 'recharts';
+import { API_BASE } from '@/lib/api';
 
 interface Summary {
   engagement_score: number;
@@ -45,14 +46,15 @@ export default function ReportPage() {
   const [timeline, setTimeline] = useState<TimelinePoint[]>([]);
   const [moments, setMoments] = useState<Moment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [gaugeAnimated, setGaugeAnimated] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
     
     Promise.all([
-      fetch(`http://localhost:8000/api/report/${sessionId}/summary`).then(r => r.json()),
-      fetch(`http://localhost:8000/api/report/${sessionId}/timeline`).then(r => r.json()),
-      fetch(`http://localhost:8000/api/report/${sessionId}/moments`).then(r => r.json())
+      fetch(`${API_BASE}/api/report/${sessionId}/summary`).then(r => r.json()),
+      fetch(`${API_BASE}/api/report/${sessionId}/timeline`).then(r => r.json()),
+      fetch(`${API_BASE}/api/report/${sessionId}/moments`).then(r => r.json())
     ])
     .then(([sumData, timeData, momData]) => {
       if (sumData.detail) throw new Error(sumData.detail);
@@ -64,7 +66,10 @@ export default function ReportPage() {
       console.error(err);
       alert("Failed to load report data.");
     })
-    .finally(() => setLoading(false));
+    .finally(() => {
+      setLoading(false);
+      setTimeout(() => setGaugeAnimated(true), 100);
+    });
   }, [sessionId]);
 
   if (loading) {
@@ -81,8 +86,8 @@ export default function ReportPage() {
   const scoreColor = summary.engagement_score >= 80 ? 'var(--success)' : 
                      summary.engagement_score >= 60 ? '#f59e0b' : 'var(--error)';
 
-  const MetricCard = ({ title, value, label }: { title: string, value: string | number, label: string }) => (
-    <div className="glass-panel slide-up" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
+  const MetricCard = ({ title, value, label, className }: { title: string, value: string | number, label: string, className?: string }) => (
+    <div className={`glass-panel ${className || 'slide-up'}`} style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
       <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '8px' }}>{title}</span>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
         <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)' }}>{value}</span>
@@ -93,25 +98,35 @@ export default function ReportPage() {
 
   return (
     <div className="fade-in" style={{ padding: '40px 0', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }} className="print-header">
         <div>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>Interview Report</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Review your detailed behavioral analysis below.</p>
         </div>
-        <button className="btn-secondary" onClick={() => router.push('/')}>
-          Done
-        </button>
+        <div style={{ display: 'flex', gap: '16px' }} className="no-print">
+          <button className="btn-secondary" onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print
+          </button>
+          <button className="btn-secondary" onClick={() => router.push('/')}>
+            Done
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '24px', marginBottom: '24px' }}>
         {/* Main Score Gauge */}
-        <div className="glass-panel slide-up" style={{ padding: '40px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+        <div className="glass-panel slide-up" style={{ padding: '40px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }} title="Weighted sum: Eye Contact 35%, Posture 20%, Head 25%, Mouth 10%, Blink 10%">
           <h3 style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Overall Engagement</h3>
           
           <div style={{ position: 'relative', width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="200" height="200" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
               <circle cx="50" cy="50" r="45" fill="transparent" stroke="var(--border-color)" strokeWidth="8" />
-              <circle cx="50" cy="50" r="45" fill="transparent" stroke={scoreColor} strokeWidth="8" strokeDasharray={`${summary.engagement_score * 2.827} 282.7`} strokeLinecap="round" style={{ transition: 'all 1s ease-out' }} />
+              <circle cx="50" cy="50" r="45" fill="transparent" stroke={scoreColor} strokeWidth="8" strokeDasharray={`${gaugeAnimated ? summary.engagement_score * 2.827 : 0} 282.7`} strokeLinecap="round" style={{ transition: 'stroke-dasharray 1.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
             </svg>
             <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <span style={{ fontSize: '3.5rem', fontWeight: 700, lineHeight: 1 }}>{Math.round(summary.engagement_score)}</span>
@@ -131,21 +146,25 @@ export default function ReportPage() {
             title="Eye Contact" 
             value={`${Math.round(summary.eye_contact_pct)}%`} 
             label={summary.eye_contact_pct > 80 ? "Great connection" : "Look at the camera more"} 
+            className="slide-up-1"
           />
           <MetricCard 
             title="Head Stability" 
             value={`${Math.round(summary.avg_head_stability * 100)}%`} 
             label={summary.avg_head_stability > 0.7 ? "Very stable" : "Avoid excessive movement"} 
+            className="slide-up-2"
           />
           <MetricCard 
             title="Posture Score" 
             value={`${Math.round(summary.avg_posture_score * 100)}%`} 
             label={summary.avg_posture_score > 0.8 ? "Upright & confident" : "Watch out for slouching"} 
+            className="slide-up-3"
           />
           <MetricCard 
             title="Blink Rate" 
             value={`${Math.round(summary.blink_rate)} bpm`} 
             label={summary.blink_rate > 30 ? "Slightly elevated" : summary.blink_rate < 10 ? "A bit low (staring)" : "Normal range"} 
+            className="slide-up-4"
           />
         </div>
       </div>

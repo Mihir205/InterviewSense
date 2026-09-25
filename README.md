@@ -81,6 +81,13 @@ Copy `.env.local.example` to `.env.local` and set `NEXT_PUBLIC_API_URL=http://lo
 
 ### 4. Run locally
 
+**Option A: One-command launcher (Windows)**
+```bash
+.\run.ps1
+```
+
+**Option B: Manual start**
+
 **Terminal 1 — backend**
 
 ```bash

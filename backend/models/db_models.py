@@ -67,6 +67,7 @@ class Session(Base):
         default="queued",
         nullable=False,
     )
+    progress_pct: Mapped[float] = mapped_column(Float, default=0.0)
 
     # Relationships
     frame_metrics: Mapped[list["FrameMetric"]] = relationship(

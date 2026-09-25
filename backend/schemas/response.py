@@ -12,6 +12,7 @@ class AnalyzeResponse(BaseModel):
 
 class StatusResponse(BaseModel):
     status: str
+    progress_pct: Optional[float] = 0.0
 
 class MomentResponse(BaseModel):
     timestamp_sec: float

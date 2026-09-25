@@ -41,6 +41,14 @@ class VideoProcessor:
         else:
             self.frame_interval = int(round(self.original_fps / self.target_fps))
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.cap and self.cap.isOpened():
+            self.cap.release()
+        return False  # don't suppress exceptions
+
     def process_frames(self) -> Iterator[Tuple[np.ndarray, float, int]]:
         """
         Yields (frame_bgr, timestamp_sec, original_frame_index)

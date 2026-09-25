@@ -197,3 +197,38 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-highlight);
 }
+
+/* Print Styles */
+@media print {
+  body {
+    background-color: #fff;
+    color: #000;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .glass-panel {
+    background-color: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  svg text {
+    fill: #000 !important;
+  }
+  .print-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  * {
+    color: #000 !important;
+  }
+}
+
+/* Staggered Animations */
+.slide-up-1 { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+.slide-up-2 { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
+.slide-up-3 { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+.slide-up-4 { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }

@@ -25,7 +25,6 @@ class CalibrationBaseline:
     mean_head_yaw: float = 0.0
     mean_head_pitch: float = 0.0
     mean_head_roll: float = 0.0
-    mean_shoulder_y: float = 0.0
     mean_shoulder_tilt: float = 0.0
     mean_nose_to_shoulder: float = 0.0
 

@@ -156,7 +156,8 @@ class BehaviorEngine:
                 "head_roll": smooth_roll[i],
                 "ear": smooth_ear[i],
                 "mar": smooth_mar[i],
-                "shoulder_tilt": smooth_tilt[i]
+                "shoulder_tilt": smooth_tilt[i],
+                "head_offset": f["metrics"].get("head_offset", 0.0)  # B3 fix: propagate from raw metrics
             }
             f["scores"] = {
                 "head_stability": head_stability_scores[i],

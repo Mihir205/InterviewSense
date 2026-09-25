@@ -1,11 +1,12 @@
 import os
 import uuid
+import shutil
 import logging
 from pathlib import Path
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
+from backend.database import get_db, SessionLocal
 from backend.models.db_models import Session as DbSession, FrameMetric, Moment, SessionSummary
 from backend.schemas.response import UploadResponse, AnalyzeResponse, StatusResponse
 from backend.services.ffmpeg_utils import convert_to_mp4, get_video_duration
@@ -32,8 +33,9 @@ async def upload_video(file: UploadFile = File(...), db: Session = Depends(get_d
     session_id = str(uuid.uuid4())
     video_path = UPLOAD_DIR / f"{session_id}{ext}"
     
+    # Stream to disk instead of reading entire file into RAM (M9 fix)
     with open(video_path, "wb") as f:
-        f.write(await file.read())
+        shutil.copyfileobj(file.file, f)
 
     new_session = DbSession(id=session_id, video_filename=str(video_path), status="queued")
     db.add(new_session)
@@ -47,14 +49,16 @@ def get_status(session_id: str, db: Session = Depends(get_db)):
     db_session = db.query(DbSession).filter(DbSession.id == session_id).first()
     if not db_session:
         raise HTTPException(status_code=404, detail="Session not found")
-    return {"status": db_session.status}
+    return {"status": db_session.status, "progress_pct": db_session.progress_pct}
 
-def process_analysis_task(session_id: str, db_generator):
+def process_analysis_task(session_id: str):
     """Background task to run the full analysis pipeline."""
-    db = next(db_generator())
+    # B2 Fix: Use SessionLocal() directly so we control the lifecycle cleanly
+    db = SessionLocal()
     db_session = db.query(DbSession).filter(DbSession.id == session_id).first()
     if not db_session or not db_session.video_filename:
         logger.error(f"Session {session_id} not found or missing video.")
+        db.close()
         return
 
     db_session.status = "processing"
@@ -90,6 +94,9 @@ def process_analysis_task(session_id: str, db_generator):
         first_10s_tilt = []
         first_10s_offset = []
         
+        total_frames = video_proc.total_frames // video_proc.frame_interval
+        if total_frames <= 0: total_frames = 1
+        
         for frame_bgr, t_sec, f_idx in video_proc.process_frames():
             cv_results = cv.process_frame(frame_bgr)
             metrics = metrics_eng.compute_all_metrics(frame_bgr, cv_results, baseline=None)
@@ -109,6 +116,11 @@ def process_analysis_task(session_id: str, db_generator):
                 first_10s_roll.append(metrics["head_roll"])
                 first_10s_tilt.append(metrics["shoulder_tilt"])
                 if metrics["head_offset"] != 0: first_10s_offset.append(metrics["head_offset"])
+                
+            # Update progress every 10 frames
+            if len(raw_frames_data) % 10 == 0:
+                db_session.progress_pct = min(100.0, (len(raw_frames_data) / total_frames) * 100)
+                db.commit()
         
         # Compute baseline
         def safe_mean(lst, default=0.0): return sum(lst)/len(lst) if lst else default
@@ -156,7 +168,9 @@ def process_analysis_task(session_id: str, db_generator):
                 engagement_score=f["scores"]["engagement"]
             ))
             
-        db.bulk_save_objects(frames_to_insert)
+        # B4 Fix: Use add_all + flush instead of deprecated bulk_save_objects
+        db.add_all(frames_to_insert)
+        db.flush()
         
         moments_to_insert = []
         for m in result["moments"]:
@@ -168,7 +182,8 @@ def process_analysis_task(session_id: str, db_generator):
                 description=m["description"]
             ))
             
-        db.bulk_save_objects(moments_to_insert)
+        db.add_all(moments_to_insert)
+        db.flush()
         
         summary_data = result["summary"]
         summary_row = SessionSummary(
@@ -208,6 +223,21 @@ def analyze(session_id: str, background_tasks: BackgroundTasks, db: Session = De
     if db_session.status in ["processing", "complete"]:
         return {"session_id": session_id, "status": db_session.status}
 
-    background_tasks.add_task(process_analysis_task, session_id, get_db)
+    background_tasks.add_task(process_analysis_task, session_id)
     
     return {"session_id": session_id, "status": "processing"}
+@router.get("")
+def list_sessions(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+    """Returns a list of sessions with their summaries for the history page."""
+    sessions = db.query(DbSession).order_by(DbSession.created_at.desc()).offset(skip).limit(limit).all()
+    result = []
+    for s in sessions:
+        summary = s.summary
+        result.append({
+            "id": s.id,
+            "created_at": s.created_at,
+            "duration_seconds": s.duration_seconds,
+            "status": s.status,
+            "engagement_score": summary.engagement_score if summary else None
+        })
+    return {"sessions": result}

@@ -20,22 +20,23 @@ def get_summary(session_id: str, db: Session = Depends(get_db)):
 @router.get("/{session_id}/timeline", response_model=ReportTimelineResponse)
 def get_timeline(session_id: str, db: Session = Depends(get_db)):
     """Returns frame metrics sampled roughly at 1 FPS for chart rendering."""
-    # Since processing is at ~12 FPS, we can sample every 12th frame.
-    # Alternatively, group by second or just return a subset.
-    # We will return frames where frame_number % 12 == 0
+    # M2 fix: Fetch all and sample roughly 1 per second
     metrics = db.query(FrameMetric).filter(
-        FrameMetric.session_id == session_id,
-        FrameMetric.frame_number % 12 == 0
+        FrameMetric.session_id == session_id
     ).order_by(FrameMetric.timestamp_sec).all()
 
     timeline = []
+    last_sec = -1
     for m in metrics:
-        timeline.append(TimelinePoint(
-            timestamp_sec=m.timestamp_sec,
-            engagement_score=m.engagement_score,
-            is_eye_contact=m.is_eye_contact,
-            posture_score=m.posture_score
-        ))
+        current_sec = int(m.timestamp_sec)
+        if current_sec > last_sec:
+            timeline.append(TimelinePoint(
+                timestamp_sec=m.timestamp_sec,
+                engagement_score=m.engagement_score,
+                is_eye_contact=m.is_eye_contact,
+                posture_score=m.posture_score
+            ))
+            last_sec = current_sec
 
     return ReportTimelineResponse(timeline=timeline)
 
